@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>D3: Creating paragraphs dynamically from data</title>
+		<script type="text/javascript" src="d3.v3.js"></script>
+		<style type="text/css">
+			
+			.axis path,
+			.axis line {
+				fill: none;
+				stroke: black;
+				shape-rendering: crispEdges;
+			}
+			
+			.axis text {
+				font-family: sans-serif;
+				font-size: 50px;
+			}
+
+		</style>
+	</head>
+	<body>
+		<p>Click on this text to pass to the next year.</p>
+		<div><p>Click on this text to pass to the next country.</p></div>
+		<script type="text/javascript">
+
+		var w = 600;
+			var h = 250;
+			var barPadding = 1;
+			var tas_tab=[];
+			var value=[];
+			var o = 0;
+			var y = ["FRA ", "DZA ", "MAR "];
+			var pp = 0;
+
+			//Define X axis
+			
+			d3.csv("temp_1991_2015.csv", function(error, d) {
+			  //console.log(data); //Log the data.
+             
+
+
+                //FONCTION QUI REMPLI LE VECTEUR DES DONNES PAR TOUT LES VALEURS DU CSV
+                for (var i = 0; i <d.length; i++) {
+                
+                	if(d[i].Year == 1991 && d[i].Country == y[pp])
+	  				tas_tab.push(d[i].temp);
+	  				
+	  			}
+
+//console.log(data);
+				 var xScale = d3.scale.ordinal()
+							.domain(d3.range(12))
+							.rangeRoundBands([0, w], 0.1);
+
+			var yScale = d3.scale.linear()
+							.domain([0, d3.max(tas_tab)])
+							.range([0, h]);
+			var xAxis = d3.svg.axis()
+							  .scale(xScale)
+							  .orient("bottom")
+							  .ticks(5);
+
+			//Define Y axis
+			var yAxis = d3.svg.axis()
+							  .scale(yScale)
+							  .orient("left")
+							  .ticks(30);
+				console.log(tas_tab);
+				var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+
+			//Create bars
+			var RectGroup = svg.append("g")
+			.attr("transform", "translate(0,0)"); 
+
+			var ch = RectGroup.selectAll("rect")
+			   .data(tas_tab)
+			   .enter()
+			   .append("rect")
+			   .attr("x", function(d, i) {
+			   		return xScale(i);
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d);
+			   })
+			   .attr("width", xScale.rangeBand())
+			   .attr("height", function(d) {
+			   		return yScale(d);
+			   })
+			   .attr("fill", function(d) {
+					return "rgb(0, 0, " + (d * 10) + ")";
+			   });
+
+			   //Create labels
+			svg.selectAll("text")
+			   .data(tas_tab)
+			   .enter()
+			   .append("text")
+			   .text(function(d) {
+			   		return d;
+			   })
+			   .attr("text-anchor", "middle")
+			   .attr("x", function(d, i) {
+			   		return xScale(i) + xScale.rangeBand() / 2;
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d) + 14;
+			   })
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", "11px")
+			   .attr("fill", "white");
+			   //Update X axis
+					svg.select(".x.axis")
+				    	.transition()
+				    	.duration(1000)
+						.call(xAxis);
+					
+					//Update Y axis
+					svg.select(".y.axis")
+				    	.transition()
+				    	.duration(1000)
+						.call(yAxis);
+			  
+
+				d3.select("p")
+				.on("click", function() {
+					o++;
+					ans = [ 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+						  , 2005 ];
+					//y = ["FRA ", "DZA ", "MAR "];
+					if(o == ans.length ){
+						o = 0;
+					}
+					
+					tas_tab = []
+					//New values for dataset
+					
+					for (var i = 0; i <d.length; i++) {
+                		if(d[i].Year == ans[o] && d[i].Country == y[pp])
+	  					tas_tab.push(d[i].temp);	  				
+	  			}
+			var yScale = d3.scale.linear()
+							.domain([0, d3.max(tas_tab)])
+							.range([0, h]);
+				console.log(ans[o], tas_tab);
+
+				svg.selectAll("rect")
+					   .data(tas_tab)
+					   
+					   .transition()
+					   .delay(500)
+					   .duration(1000) // CHANGE HERE THE DURATION					   
+					   .ease("cubic-in-out")
+					   .attr("y", function(d) {
+					   		return h - yScale(d);
+					   })
+					   .attr("height", function(d) {
+					   		return yScale(d);
+					   })
+					   .attr("fill", function(d, i) {
+					   	var e = d3.max(tas_tab)/2;
+					   	//console.log(e);
+					   	//console.log('hhh',tas_tab[i]);
+					   	if(tas_tab[i] > e)
+							//return "rgb(0, 0, " + (d * 10) + ")";
+							return "rgb("+(255-(d*5)) + ",0,0)";
+						else return "rgb(0, 0, " + (d*10) + ")";
+					   });
+				
+			    });	
+			    svg.selectAll("text")
+			   .data(tas_tab)
+			   .enter()
+			   .append("text")
+			   .text(function(d) {
+			   		return d;
+			   })
+			   .attr("text-anchor", "middle")
+			   .attr("x", function(d, i) {
+			   		return xScale(i) + xScale.rangeBand() / 2;
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d) + 8;
+			   })
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", "11px")
+			   .attr("fill", "white");	
+
+			    		d3.select("div")
+				.on("click", function() {
+					ans = [ 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+						  , 2005 ];
+					pp++;
+					o = 0;
+
+if(pp == y.length ){
+						pp = 0;
+					}
+
+
+					tas_tab = []
+					//New values for dataset
+					
+					for (var i = 0; i <d.length; i++) {
+                		if(d[i].Year == ans[o] && d[i].Country == y[pp])
+	  					tas_tab.push(d[i].temp);	 
+	  					console.log(y[pp]); 				
+	  			}
+			var yScale = d3.scale.linear()
+							.domain([0, d3.max(tas_tab)])
+							.range([0, h]);
+				console.log(ans[o], tas_tab);
+
+				svg.selectAll("rect")
+					   .data(tas_tab)
+					   
+					   .transition()
+					   .delay(500)
+					   .duration(1000) // CHANGE HERE THE DURATION					   
+					   .ease("cubic-in-out")
+					   .attr("y", function(d) {
+					   		return h - yScale(d);
+					   })
+					   .attr("height", function(d) {
+					   		return yScale(d);
+					   })
+					   .attr("fill", function(d, i) {
+					   	var e = d3.max(tas_tab)/2;
+					   	//console.log(e);
+					   	//console.log('hhh',tas_tab[i]);
+					   	if(tas_tab[i] > e)
+							//return "rgb(0, 0, " + (d * 10) + ")";
+							return "rgb("+(255-(d*5)) + ",0,0)";
+						else return "rgb(0, 0, " + (d*10) + ")";
+					   });
+					  //Create labels
+			svg.selectAll("text")
+			   .data(tas_tab)
+			   .enter()
+			   .append("text")
+			   .text(function(d) {
+			   		return d;
+			   })
+			   .attr("text-anchor", "middle")
+			   .attr("x", function(d, i) {
+			   		return xScale(i) + xScale.rangeBand() / 2;
+			   })
+			   .attr("y", function(d) {
+			   		return h - yScale(d) + 8;
+			   })
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", "11px")
+			   .attr("fill", "white"); 
+					
+ });	
+ });		
+		</script>
+	</body>
+</html>

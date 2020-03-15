@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>D3: Creating paragraphs dynamically from data</title>
+		<script type="text/javascript" src="d3.v3.js"></script>
+	</head>
+	<body>
+		<script type="text/javascript">
+		var w = 600;
+			var h = 400;
+			var barPadding = 1;
+			
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+		
+			d3.csv("info-data.csv", function(error, data) {
+			  if (error) { //If error is not null, something went wrong.
+	              console.log(error); //Log the error.
+	                     } 
+               else { //If no error, the file loaded correctly. Yay!
+	              console.log(data); //Log the data.
+                    }
+	  
+			    var section=svg.selectAll("rect");
+				
+				section.data(data)
+				.enter()
+				.append("rect")
+			   .attr("x", function(d, i) {console.log(i * (w / data.length));
+			   		return i * (w / data.length);
+			   })
+			   .attr("y", function(d) {
+			   		return h/2 - (d.nbdemandes1p);
+			   })
+			   .attr("width", w / (2*data.length) - barPadding)
+			   .attr("height", function(d) {
+			   		return d.nbdemandes1p;
+			   })
+			   .attr("fill", function(d) {
+                return "rgb(" + (3*d.nbdemandes1p) + ", 0,0 )";
+                });
+				
+				section.data(data)
+				.enter()
+				.append("rect")
+			   .attr("x", function(d, i) { console.log((2*i+1) * (w / data.length));
+			   		return (i * (w / data.length));
+			   })
+			   .attr("y", function(d) {
+			   		return h - (d.nbdemandes12p);
+			   })
+			   .attr("width", w / (2*data.length) - barPadding)
+			   .attr("height", function(d) {
+			   		return d.nbdemandes12p;
+			   })
+			   .attr("fill", function(d) {
+                return "rgb(0, " + (d.nbdemandes12p*2) + ", 0)";
+                });
+			});			
+		</script>
+	</body>
+</html>
